@@ -1,26 +1,103 @@
-#  Как работать с репозиторием финального задания
+## Описание:
+kittygram - это сервис для любителей котиков. Пользователи могут создавать и делиться информацией о своих или чужих котиках.
 
-## Что нужно сделать
+# Как запустить проект
+Копируем docker-compose.production.yml на продакшен-сервер в директорую kittygram.
 
-Настроить запуск проекта Kittygram в контейнерах и CI/CD с помощью GitHub Actions
+Создаем .env файл с информацией о создаваемой БД.
 
-## Как проверить работу с помощью автотестов
-
-В корне репозитория создайте файл tests.yml со следующим содержимым:
-```yaml
-repo_owner: ваш_логин_на_гитхабе
-kittygram_domain: полная ссылка (https://доменное_имя) на ваш проект Kittygram
-taski_domain: полная ссылка (https://доменное_имя) на ваш проект Taski
-dockerhub_username: ваш_логин_на_докерхабе
+Выполняет pull образов с DockerHub
+```
+sudo docker compose -f docker-compose.production.yml pull
 ```
 
-Скопируйте содержимое файла `.github/workflows/main.yml` в файл `kittygram_workflow.yml` в корневой директории проекта.
+# Запускаем все контейнеры в docker compose
+```
+sudo docker compose -f docker-compose.production.yml up -d
+```
+# Выполняет миграции и сбор статики
+```
+sudo docker compose -f docker-compose.production.yml exec backend python manage.py migrate
+```
+```
+sudo docker compose -f docker-compose.production.yml exec backend python manage.py collectstatic
+```
+```
+sudo docker compose -f docker-compose.production.yml exec backend cp -r /app/collected_static/. /backend_static/static/
+```
+## Примеры запросов:
+### Создание пользователя:
+```
+ [POST]https://kittgramm.ddns.net/api/users/
+{
+  "username": "Name",
+  "password": "123456789and"
+}
+```
+### Ответ:
+```
+{
+    "email": "",
+    "username": "Name",
+    "id": 1
+}
+```
 
-Для локального запуска тестов создайте виртуальное окружение, установите в него зависимости из backend/requirements.txt и запустите в корневой директории проекта `pytest`.
+### Получение списка всех котиков:
+```
+    [GET]https://kittgramm.ddns.net/api/cats/
+```
+### Ответ:
+```
+[
+  {
+    "id": 11,
+    "name": "Scot",
+    "color": "darkorange",
+    "birth_year": 2023,
+    "achievements": [
+      {
+        "id": 1,
+        "achievement_name": "храпит"
+      }
+    ],
+    "owner": 1,
+    "age": 0,
+    "image": "http://kittygramm.crabdance.com/media/cats/images/temp_qrZM4sH.jpeg"
+  },
+  {
+    "id": 14,
+    "name": "Ярик",
+    "color": "orange",
+    "birth_year": 2017,
+    "achievements": [
+      {
+        "id": 1,
+        "achievement_name": "храпит"
+      }
+    ],
+    "owner": 1,
+    "age": 6,
+    "image": "http://kittgramm.ddns.net/media/cats/images/temp_BqLjDCY.jpeg"
+  },
+  {
+    "id": 15,
+    "name": "Name",
+    "color": "whitesmoke",
+    "birth_year": 2023,
+    "achievements": [
+      {
+        "id": 1,
+        "achievement_name": "храпит"
+      }
+    ],
+    "owner": 3,
+    "age": 0,
+    "image": "http://kittgramm.ddns.net/media/cats/images/temp_8QCsMRA.jpeg"
+  }
+]
+```
 
-## Чек-лист для проверки перед отправкой задания
+# Kittygram
+https://kittgramm.ddns.net
 
-- Проект Taski доступен по доменному имени, указанному в `tests.yml`.
-- Проект Kittygram доступен по доменному имени, указанному в `tests.yml`.
-- Пуш в ветку main запускает тестирование и деплой Kittygram, а после успешного деплоя вам приходит сообщение в телеграм.
-- В корне проекта есть файл `kittygram_workflow.yml`.
